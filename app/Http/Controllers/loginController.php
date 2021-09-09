@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Http\Resources\userResource;
 
 class loginController extends Controller
 {
@@ -20,20 +21,17 @@ class loginController extends Controller
         {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
-        return response()->json($token);
+        return response()->json([
+            'meta' => $token,
+            'user' =>  new userResource(auth()->user()) 
+        ]);
     }
 
     public function validate_login(Request $request) 
     {
         return $request->validate([
-            'email' => ['required', 'email', 
-                Rule::exists('users')->where(function($query) {
-                    $query->whereNotNull('email_verified_at');
-                })
-            ],
+            'email' => ['required', 'email', 'exists:users'],
             'password' => 'required'
-        ], [
-            'email.exists' => 'Email not found or account is not activated yet!'
         ]);
     }
 

@@ -17,24 +17,13 @@ class registerController extends Controller
 
     public function register(Request $request) 
     {
-        [
-            // 'name' => $name, 
-            // 'email' => $email,
-            'token'    => $token,
-            'username' => $username,
-            'password' => $password
-        ] = $this->validate_request($request); 
-
-        $email = optional(DB::table('invite_tokens')->where('token', $token)->first())->email;
-
+        $this->validate_request($request); 
         User::create([
-            'email'         => $email,
-            'user_name'     => $username,
-            'password'      => bcrypt($password),    
+            'name'          => $request->name,
+            'email'         => $request->email,
+            'password'      => bcrypt($request->password),    
             'registered_at' => now(),
         ]);
-
-        event(new send_pin_to_users($email));
 
         return response()->json('Your account has been created.');
     
@@ -43,8 +32,8 @@ class registerController extends Controller
     public function validate_request(Request $request) 
     {
         return $request->validate([
-            'token'     => 'required|exists:invite_tokens',
-            'username'  => 'required|unique:users,user_name|string|between:4,20',
+            'name'      => 'required',
+            'email'     => 'required|unique:users|email',
             'password'  => 'required|string|between:6,25',
         ]);    
     }
