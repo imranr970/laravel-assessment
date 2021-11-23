@@ -21,7 +21,7 @@ class send_invitation_to_users extends Mailable
     {
         $this->token = $token;
         $this->name = $name;
-        $this-> url = url('/api/register');
+        $this->url = url('/api/register?token='.$token);
     }
 
     /**

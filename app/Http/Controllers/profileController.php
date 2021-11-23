@@ -33,16 +33,12 @@ class profileController extends Controller
     public function update(Request $request) 
     {
         
-        [
-            'name' => $name, 
-            'email' => $email,
-            'username' => $username,
-        ] = $this->validate_request($request);
+        $this->validate_request($request);
 
         $updates = [
-            'name'      => $name,
-            'email'     => $email,
-            'user_name' => $username
+            'name'      => $request->name,
+            'email'     => $request->email,
+            'username' => $request->username
         ];
 
         if($request->has('avatar')) 
@@ -53,8 +49,8 @@ class profileController extends Controller
         $user = tap($request->user())->update($updates);    
         
         return response()->json([
-            'data' => new userResource($user),
-            'Profile updated'
+            'data'     => new userResource($user),
+            'message'  => 'Profile updated'
         ], 200);
 
     }
@@ -71,7 +67,7 @@ class profileController extends Controller
         return $request->validate([
             'name'      => 'required',
             'email'     => 'required|email|unique:users,email,'.$request->user()->id,
-            'username'  => 'required|unique:users,user_name,'.$request->user()->id.'|string|between:4,20',
+            'username'  => 'required|regex:/^\S*$/u|unique:users,username,'.$request->user()->id.'|string|between:4,20',
             'avatar'    => 'sometimes|image|dimensions:min_width=256,min_height:256|nullable',
         ]);    
     }

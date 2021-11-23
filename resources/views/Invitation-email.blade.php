@@ -3,13 +3,10 @@
 
 You have been invited to create Account on Laravel Assessment.
 <br>
-Use this Invite Token to create a Free Account.
+Use this Invite link to create a Free Account.
 <br>
-{{ $token }}
 
-@component('mail::button', ['url' => $url ])
-Create a Free Account
-@endcomponent
+<a href="{{ $url }}">{{ $url }}</a>
 
 Thanks,<br>
 {{ config('app.name') }}

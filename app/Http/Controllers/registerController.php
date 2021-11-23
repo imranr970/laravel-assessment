@@ -21,20 +21,33 @@ class registerController extends Controller
         User::create([
             'name'          => $request->name,
             'email'         => $request->email,
+            'username'      => $request->username,
             'password'      => bcrypt($request->password),    
-            'registered_at' => now(),
+            'registered_at' => now()
         ]);
 
-        return response()->json('Your account has been created.');
+        $this->send_verification_token($request);
+
+        return response()->json('Your account has been created. Check your email for account verification link.');
     
+    }
+
+    public function send_verification_token(Request $request) 
+    {
+        event(new send_pin_to_users($request->email));
     }
 
     public function validate_request(Request $request) 
     {
         return $request->validate([
             'name'      => 'required',
-            'email'     => 'required|unique:users|email',
+            'email'     => 'required|unique:users|email|exists:invites,email',
+            'username'  => 'required|unique:users,username',
             'password'  => 'required|string|between:6,25',
+            'token'     => 'required|exists:invites,token'    
+        ], [
+            'email.exists' => 'You are not eligble for creating a free account!',
+            'token.exists' => 'Invalid Invite token!'
         ]);    
     }
 

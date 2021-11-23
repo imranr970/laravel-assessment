@@ -4,14 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Events\send_invite_email_to_user;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 
 class userInviteController extends Controller
 {
     
     public function __construct() 
     {
-        $this->middleware(['auth:api']);
+        $this->middleware(['auth:api', 'isAdmin']);
     }
 
     public function invite(Request $request) 
@@ -19,19 +18,20 @@ class userInviteController extends Controller
 
         $request->validate([
             'name'  => 'required',
-            'email' => 'required|email'
+            'email' => 'required|email|unique:invites,email'
+        ], [
+            'email.unique' => 'Invite is already sent to this email.'
         ]);
 
-        if(!Gate::allows('invite', $request->user())) 
-        {
-            return abort(401, 'You are Unauthorized');
-        }
-
-        
-        event(new send_invite_email_to_user($request->email, $request->name));
+        $this->invite_user($request);        
 
         return "User invitation link sent";
 
+    }
+
+    public function invite_user(Request $request) 
+    {
+        event(new send_invite_email_to_user($request->email, $request->name));
     }
 
 }

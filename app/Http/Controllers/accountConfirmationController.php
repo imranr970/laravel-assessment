@@ -4,31 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
 
 class accountConfirmationController extends Controller
 {
     public function confirm(Request $request) 
     {
         $request->validate([
-            'email' => 'exists:users|email|exists:invite_pins',
-            'pin'   => ['string', 'size:6', 
-                Rule::exists('invite_pins')->where('email', $request->email)
-            ]
+            'email' => 'exists:users|email',
+            'pin'   => 'exists:users,email_token'
         ], [
-            'pin.exists' => 'No email or Pin found for your account! Kindly double check.'
+            'pin.exists' => 'Invalid token'
         ]);
 
-        $user = User::where('email', $request->email)->first();
-        $user = tap($user)->update([
-            'email_verified_at' => now()
+        $user = User::where('email', $request->email)->firstOrFail();
+        $user->update([
+            'email_verified_at' => now(),
+            'email_token'       => null
         ]);
-
-        DB::table('invite_pins')->where('email', $request->email)->delete();
 
         return response()->json([
-            'user' => $user,
             'Account confirmation success'
         ], 200);
 

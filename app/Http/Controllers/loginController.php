@@ -30,8 +30,14 @@ class loginController extends Controller
     public function validate_login(Request $request) 
     {
         return $request->validate([
-            'email' => ['required', 'email', 'exists:users'],
+            'email' => ['required', 'email',
+                Rule::exists('users')->where(fn($query) => 
+                    $query->whereNotNull('email_verified_at')
+                )
+            ],
             'password' => 'required'
+        ], [
+            'email.exists' => 'Account not found or is not activated!'
         ]);
     }
 
